@@ -26,6 +26,12 @@ class WisataController extends Controller
         return view('wisata.index', compact('wisatas'));
     }
 
+    public function landing()
+    {
+        $wisatas = Wisata::latest()->take(6)->get();
+        return view('welcome', compact('wisatas'));
+    }
+
     public function create()
     {
         return view('wisata.create');
