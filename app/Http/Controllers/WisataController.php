@@ -26,10 +26,39 @@ class WisataController extends Controller
         return view('wisata.index', compact('wisatas'));
     }
 
+    public function adminIndex(Request $request)
+    {
+        $query = Wisata::query();
+
+        if ($request->filled('search')) {
+            $query->where('nama', 'like', '%' . $request->search . '%');
+        }
+
+        if ($request->filled('kategori')) {
+            $query->where('kategori', $request->kategori);
+        }
+
+        $wisatas = $query->latest()->get();
+        return view('admin.wisata.index', compact('wisatas'));
+    }
+
     public function landing()
     {
         $wisatas = Wisata::latest()->take(6)->get();
-        return view('welcome', compact('wisatas'));
+        $totalWisata = Wisata::count();
+        $totalKategori = Wisata::distinct('kategori')->count('kategori');
+        
+        return view('welcome', compact('wisatas', 'totalWisata', 'totalKategori'));
+    }
+
+    public function tentang()
+    {
+        return view('tentang');
+    }
+
+    public function kontak()
+    {
+        return view('kontak');
     }
 
     public function create()
@@ -93,6 +122,23 @@ class WisataController extends Controller
         }
 
         $wisata->update($data);
+
+        if ($request->hasFile('galeri')) {
+            $angles = ['Tampak Depan', 'Tampak Samping', 'Area Dalam', 'Spot Utama', 'Fasilitas'];
+            foreach ($request->file('galeri') as $index => $file) {
+                if ($file->isValid()) {
+                    $galeriName = time() . '_' . $index . '_' . $file->getClientOriginalName();
+                    $file->move(public_path('uploads/galeri'), $galeriName);
+
+                    WisataImage::create([
+                        'wisata_id' => $wisata->id,
+                        'foto_path' => 'uploads/galeri/' . $galeriName,
+                        'angle_foto' => $angles[$index] ?? 'Lainnya'
+                    ]);
+                }
+            }
+        }
+
         return redirect()->route('wisata.index')->with('success', 'Data berhasil diperbarui!');
     }
 

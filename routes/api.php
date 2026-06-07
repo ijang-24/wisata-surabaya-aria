@@ -14,6 +14,11 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
+use App\Http\Controllers\Api\WisataApiController;
+
+Route::get('/wisata', [WisataApiController::class, 'index']);
+Route::get('/wisata/{id}', [WisataApiController::class, 'show']);
+
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
